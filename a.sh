@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+_ansioso_find_config() {
+    _ansioso_filename=
+    _ansioso_path=$(pwd)
+    while [ ! "$_ansioso_path" == '/' ]
+    do
+        _ansioso_filename="$_ansioso_path/ansible.cfg"
+        [ -f "$_ansioso_filename" ] && break
+        _ansioso_filename=
+        _ansioso_path=$(dirname "$_ansioso_path")
+    done
+}
+
 _ansioso() {
 	local cur prev script temp
 
@@ -275,6 +287,7 @@ ansioso() {
 	esac
 }
 
+[ "$1" == 'test' ] && return 0
 SCRIPT=$(echo "${0}" | grep '\.sh$')
 if [ "${SCRIPT}" = '' ]
 then
