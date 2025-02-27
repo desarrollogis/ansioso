@@ -94,9 +94,9 @@ _ansioso() {
 
 ansioso() {
     _ansioso_find_config
-    filename="$_ansioso_filename"
-	if [ ! "${filename}" == "" ]
+	if [ ! -z "${_ansioso_filename}" ]
 	then
+        filename="$_ansioso_filename"
 		CURRENT=$(pwd)
 		ROOT=$(dirname "${filename}")
 		INVENTORY=
