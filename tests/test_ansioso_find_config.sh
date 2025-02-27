@@ -2,7 +2,7 @@
 
 test_ansioso_find_config() {
     _ansioso_find_config
-	assertNotEquals "${_ansioso_filename}" ''
+    assertTrue "[ -r '${_ansioso_filename}' ]"
 }
 
 #set -x

@@ -12,6 +12,43 @@ _ansioso_find_config() {
     done
 }
 
+_ansioso_get_script() {
+	READLINK=$(which greadlink)
+	[ -z "$READLINK" ] && READLINK=$(which readlink)
+	_ansioso_script=$("$READLINK" -f "${BASH_SOURCE[0]}")
+	_ansioso_script_dir=$(dirname "$_ansioso_script")
+	_ansioso_script_name=$(basename "$_ansioso_script")
+}
+
+_ansioso_install_script() {
+    _ansioso_get_script
+    _ansioso_link="/usr/local/bin/$_ansioso_script_name"
+    [ -e "$_ansioso_link" ] \
+        && echo 'Script already installed.'
+    [ -e "$_ansioso_link" ] || (
+        sudo ln -s "$_ansioso_script" "$_ansioso_link" \
+            && echo 'Script installed.' \
+            || echo 'Failed to install script.'
+    )
+    _ansioso_completion=
+    [ -d /etc/bash_completion.d/ ] \
+        && _ansioso_completion=/etc/bash_completion.d
+    [ -z "$_ansioso_completion" ] \
+        && [ -d /usr/local/etc/bash_completion.d/ ] \
+        && _ansioso_completion=/usr/local/etc/bash_completion.d
+    [ -z "$_ansioso_completion" ] \
+        && echo 'No completion detected.' \
+        && exit 0
+    _ansioso_link="$_ansioso_completion/$_ansioso_script_name"
+    [ -e "$_ansioso_link" ] \
+       && echo 'Completion already installed.' \
+       && exit 0
+    sudo ln -s "$_ansioso_script" "$_ansioso_link" \
+        && echo 'Completion installed.' \
+        || echo 'Failed to install completion.'
+    echo 'Reload bash to enable completion.'
+}
+
 _ansioso() {
 	local cur prev script temp
 
@@ -55,38 +92,9 @@ _ansioso() {
 	return 0
 }
 
-_ansioso_get_script() {
-	READLINK=$(which greadlink)
-	[ "${READLINK}" = '' ] && READLINK=$(which readlink)
-	SCRIPT=$("${READLINK}" -f "${BASH_SOURCE[0]}")
-	SCRIPTDIR=$(dirname "${SCRIPT}")
-	SCRIPTNAME=$(basename "${SCRIPT}")
-}
-
 ansioso() {
-	path=$(pwd)
-	filename=
-	while true
-	do
-		if [ "${path}" = "/" ]
-		then
-			filename="${path}ansible.cfg"
-		else
-			filename="${path}/ansible.cfg"
-		fi
-		if [ -f "${filename}" ]
-		then
-			break
-		else
-			filename=
-		fi
-		if [ "${path}" = "/" ]
-		then
-			break
-		else
-			path=$(dirname "${path}")
-		fi
-	done
+    _ansioso_find_config
+    filename="$_ansioso_filename"
 	if [ ! "${filename}" == "" ]
 	then
 		CURRENT=$(pwd)
@@ -103,13 +111,7 @@ ansioso() {
 	fi
 	case "${1}" in
 		install-script)
-			_ansioso_get_script
-			LINK="/usr/local/bin/${SCRIPTNAME}"
-			[ -e "${LINK}" ] || sudo ln -s "${SCRIPT}" "${LINK}"
-			[ -d /etc/bash_completion.d/ ] && COMPLETION=/etc/bash_completion.d || COMPLETION=/usr/local/etc/bash_completion.d
-			LINK="${COMPLETION}/${SCRIPTNAME}"
-			[ -e "${LINK}" ] || sudo ln -s "${SCRIPT}" "${LINK}"
-			echo 'Reload bash.'
+            _ansioso_install_script
 			;;
 		deploy-skeleton)
 			_ansioso_get_script
@@ -289,7 +291,7 @@ ansioso() {
 
 [ "$1" == 'test' ] && return 0
 SCRIPT=$(echo "${0}" | grep '\.sh$')
-if [ "${SCRIPT}" = '' ]
+if [ "${SCRIPT}" == '' ]
 then
 	complete -F _ansioso a.sh
 	return 0
