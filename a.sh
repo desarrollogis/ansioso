@@ -13,11 +13,11 @@ _ansioso_find_config() {
 }
 
 _ansioso_get_script() {
-	READLINK=$(which greadlink)
-	[ -z "$READLINK" ] && READLINK=$(which readlink)
-	_ansioso_script=$("$READLINK" -f "${BASH_SOURCE[0]}")
-	_ansioso_script_dir=$(dirname "$_ansioso_script")
-	_ansioso_script_name=$(basename "$_ansioso_script")
+    READLINK=$(which greadlink)
+    [ -z "$READLINK" ] && READLINK=$(which readlink)
+    _ansioso_script=$("$READLINK" -f "${BASH_SOURCE[0]}")
+    _ansioso_script_dir=$(dirname "$_ansioso_script")
+    _ansioso_script_name=$(basename "$_ansioso_script")
 }
 
 _ansioso_install_script() {
@@ -50,46 +50,46 @@ _ansioso_install_script() {
 }
 
 _ansioso() {
-	local cur prev script temp
+    local cur prev script temp
 
-	COMPREPLY=()
-	cur=${COMP_WORDS[COMP_CWORD]}
-	prev=${COMP_WORDS[COMP_CWORD-1]}
-	script=$(which ${COMP_WORDS[0]})
-	if [ -f "$script" -a -x "$script" ]
-	then
-		temp=
-		case $COMP_CWORD in
-			1)
-				temp=$($script | awk '{print $2}')
-				;;
-			2)
-				temp=
-				case $prev in
-					put-inventory|vim-inventory)
-						temp=$($script list-inventories)
-						;;
-					put-playbook|vim-playbook|execute-playbook)
-						temp=$($script list-playbooks)
-						;;
-					put-role|vim-role|test-role)
-						temp=$($script list-roles)
-						;;
-					put-key)
-						temp=$($script list-keys)
-						;;
-					put-user)
-						temp=$($script list-users)
-						;;
-					ssh-server)
-						temp=$($script list-servers)
-						;;
-				esac
-				;;
-		esac
-		COMPREPLY=($(compgen -W "${temp}" -- ${cur}))
-	fi
-	return 0
+    COMPREPLY=()
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD-1]}
+    script=$(which ${COMP_WORDS[0]})
+    if [ -f "$script" -a -x "$script" ]
+    then
+        temp=
+        case $COMP_CWORD in
+            1)
+                temp=$($script | awk '{print $2}')
+                ;;
+            2)
+                temp=
+                case $prev in
+                    put-inventory|vim-inventory)
+                        temp=$($script list-inventories)
+                        ;;
+                    put-playbook|vim-playbook|execute-playbook)
+                        temp=$($script list-playbooks)
+                        ;;
+                    put-role|vim-role|test-role)
+                        temp=$($script list-roles)
+                        ;;
+                    put-key)
+                        temp=$($script list-keys)
+                        ;;
+                    put-user)
+                        temp=$($script list-users)
+                        ;;
+                    ssh-server)
+                        temp=$($script list-servers)
+                        ;;
+                esac
+                ;;
+        esac
+        COMPREPLY=($(compgen -W "${temp}" -- ${cur}))
+    fi
+    return 0
 }
 
 ansioso() {
